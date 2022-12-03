@@ -18,10 +18,12 @@ fn main() {
         }
     }
 
-    let max =  elves.iter().max();
+    elves.sort();
+    let max = elves.iter().last().unwrap();
+    let max_sum_three: i32 = elves.iter().rev().take(3).sum();
+    
 
-    match max {
-        Some(max) => println!("{}", max),
-        None => println!("empty"),
-    }
+    println!("{}", max);
+    println!("{}", max_sum_three);
+
 }
