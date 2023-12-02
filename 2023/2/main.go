@@ -21,6 +21,7 @@ func main() {
 
 	count := 1
 	sum := 0
+	power = 0
 
 	for s.Scan() {
 		l := strings.Split(s.Text(), ":")
