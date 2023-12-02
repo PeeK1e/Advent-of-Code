@@ -32,6 +32,28 @@ func TestSum(t *testing.T) {
 	assert.Equal(t, 8, sum)
 }
 
+func TestPower(t *testing.T) {
+	s := bufio.NewScanner(strings.NewReader(input))
+	power := 0
+	for s.Scan() {
+		l := strings.Split(s.Text(), ":")
+		sl := strings.Split(strings.Trim(l[1], " "), ";")
+
+		power += gamePower(sl)
+
+	}
+
+	assert.Equal(t, 2286, power)
+}
+
+func TestGameSetPower(t *testing.T) {
+	s := " 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green"
+	sl := strings.Split(strings.Trim(s, " "), ";")
+	pow := gamePower(sl)
+
+	assert.Equal(t, 48, pow)
+}
+
 func TestInvalidSets(t *testing.T) {
 	s := "8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red"
 	sl := strings.Split(s, ";")

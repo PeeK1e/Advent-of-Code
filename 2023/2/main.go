@@ -14,6 +14,8 @@ const (
 	blue  int = 14
 )
 
+var power int = 0
+
 func main() {
 	s := aocio.FileScanner("input.txt")
 
@@ -26,15 +28,17 @@ func main() {
 		if validGame(l[1]) {
 			sum += count
 		}
+
 		count++
 	}
 
-	fmt.Printf("Sum of Valid Games %d", sum)
+	fmt.Printf("Sum of Valid Games %d\n", sum)
+	fmt.Printf("Power of Games %d", power)
 }
 
 func validGame(s string) bool {
 	sl := strings.Split(s, ";")
-
+	power += gamePower(sl)
 	return checkGames(sl)
 }
 
@@ -77,4 +81,34 @@ func parseNumberColor(s string) (int, string) {
 	sl := strings.Split(st, " ")
 	n, _ := strconv.Atoi(sl[0])
 	return n, sl[1]
+}
+
+func gamePower(s []string) int {
+	r, g, b := 1, 1, 1
+
+	for _, v := range s {
+		sl := strings.Split(strings.Trim(v, " "), ",")
+		for _, vv := range sl {
+			n, c := parseNumberColor(vv)
+			switch c {
+			case "blue":
+				if n > b {
+					b = n
+				}
+				break
+			case "green":
+				if n > g {
+					g = n
+				}
+				break
+			case "red":
+				if n > r {
+					r = n
+				}
+				break
+			}
+		}
+	}
+
+	return r * g * b
 }
