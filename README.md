@@ -1,14 +1,5 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Advent of Code</title>
-    <style>
-        body {
-            text-align: center;
-        }
-    </style>
-</head>
-<body>
-    <h1 style="color: green;">🎄 Advent of Code 🎄</h1>
-    <p>🎅 My solutions for AoC 🎅</p>
-</body>
+<h1 align="center">🎄 Advent of Code 🎄</h1>
+<p align="center">
+🎅 This Repo contains my solutions for AoC 🎅
+</p>
+
