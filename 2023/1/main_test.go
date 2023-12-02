@@ -8,7 +8,6 @@ import (
 
 func TestNumericDigets(t *testing.T) {
 	s := "4nineeightseven2"
-
 	assert.Equal(t, 42, findDigits(s))
 }
 
