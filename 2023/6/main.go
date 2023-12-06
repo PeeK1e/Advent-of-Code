@@ -23,8 +23,11 @@ func main() {
 	for _, v := range p {
 		r *= calcWinningMoves(v)
 	}
+	fmt.Println(r)
 
-	fmt.Print(r)
+	p2 := makePairs(strings.Replace(t, " ", "", -1), strings.Replace(d, " ", "", -1))
+	r = calcWinningMoves(p2[0])
+	fmt.Println(r)
 }
 
 func makePairs(t string, d string) map[int][]int {
@@ -34,8 +37,8 @@ func makePairs(t string, d string) map[int][]int {
 	b, a, _ = strings.Cut(d, "Distance:")
 	d = b + a
 
-	tl := strings.Fields(strings.Trim(t, " "))
-	dl := strings.Fields(strings.Trim(d, " "))
+	tl := strings.Fields(t)
+	dl := strings.Fields(d)
 
 	pairs := make(map[int][]int, len(tl))
 

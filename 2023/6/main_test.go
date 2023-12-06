@@ -33,3 +33,8 @@ func TestIamTooLazyToParseTask2(t *testing.T) {
 	n := calcWinningMoves([]int{44826981, 202107611381458})
 	fmt.Print(n)
 }
+
+func BenchmarkIamTooLazyToParseTask2(b *testing.B) {
+	n := calcWinningMoves([]int{44826981, 202107611381458})
+	fmt.Print(n)
+}
