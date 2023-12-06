@@ -34,7 +34,7 @@ func main() {
 	}
 
 	fmt.Printf("Sum of Valid Games %d\n", sum)
-	fmt.Printf("Power of Games %d", power)
+	fmt.Printf("Power of Games %d\n", power)
 }
 
 func validGame(s string) bool {
