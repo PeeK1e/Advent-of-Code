@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	aocio "github.com/PeeK1e/Advent-of-Code/lib/pkg/aocio"
 	"gotest.tools/assert"
 )
 
@@ -16,6 +17,21 @@ var input string = `
 3   9
 3   3
 `
+
+func BenchmarkMain(b *testing.B) {
+
+	main()
+}
+
+func BenchmarkT1(b *testing.B) {
+	s := aocio.FileScanner("./input")
+	_ = SolveT1(s)
+}
+
+func BenchmarkT2(b *testing.B) {
+	s := aocio.FileScanner("./input")
+	_ = SolveT2(s)
+}
 
 func TestSampleT1(t *testing.T) {
 	scanner := bufio.NewScanner(strings.NewReader(input))

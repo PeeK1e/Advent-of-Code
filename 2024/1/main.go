@@ -7,14 +7,9 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"testing"
 
 	aocio "github.com/PeeK1e/Advent-of-Code/lib/pkg/aocio"
 )
-
-func BenchmarkMain(b *testing.B) {
-	main()
-}
 
 func main() {
 	s := aocio.FileScanner("./input")
@@ -49,7 +44,7 @@ func SolveT1(s *bufio.Scanner) int {
 		n += int(math.Abs(float64(c)))
 	}
 
-	fmt.Printf("Solved: %d", n)
+	fmt.Printf("\nSolved: %d", n)
 	return n
 }
 
@@ -83,6 +78,6 @@ func SolveT2(s *bufio.Scanner) int {
 		n += int(math.Abs(float64(a * sim)))
 	}
 
-	fmt.Printf("Solved: %d", n)
+	fmt.Printf("\nSolved: %d", n)
 	return n
 }
