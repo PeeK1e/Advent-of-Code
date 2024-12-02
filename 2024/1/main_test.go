@@ -9,8 +9,7 @@ import (
 	"gotest.tools/assert"
 )
 
-var input string = `
-3   4
+var input string = `3   4
 4   3
 2   5
 1   3
@@ -23,14 +22,20 @@ func BenchmarkMain(b *testing.B) {
 	main()
 }
 
+var global int
+
 func BenchmarkT1(b *testing.B) {
 	s := aocio.FileScanner("./input")
-	_ = SolveT1(s)
+	for range b.N {
+		global = SolveT1(s)
+	}
 }
 
 func BenchmarkT2(b *testing.B) {
 	s := aocio.FileScanner("./input")
-	_ = SolveT2(s)
+	for range b.N {
+		global = SolveT2(s)
+	}
 }
 
 func TestSampleT1(t *testing.T) {

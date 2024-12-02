@@ -13,10 +13,12 @@ import (
 
 func main() {
 	s := aocio.FileScanner("./input")
-	SolveT1(s)
+	n := SolveT1(s)
+	fmt.Printf("\nSolved T1: %d", n)
 
 	s = aocio.FileScanner("./input")
-	SolveT2(s)
+	m := SolveT2(s)
+	fmt.Printf("\nSolved T2: %d", m)
 }
 
 func SolveT1(s *bufio.Scanner) int {
@@ -44,7 +46,6 @@ func SolveT1(s *bufio.Scanner) int {
 		n += int(math.Abs(float64(c)))
 	}
 
-	fmt.Printf("\nSolved: %d", n)
 	return n
 }
 
@@ -78,6 +79,5 @@ func SolveT2(s *bufio.Scanner) int {
 		n += int(math.Abs(float64(a * sim)))
 	}
 
-	fmt.Printf("\nSolved: %d", n)
 	return n
 }
