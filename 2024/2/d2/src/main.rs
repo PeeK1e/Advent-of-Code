@@ -67,6 +67,7 @@ fn solve_t2(input: &str) -> i32 {
     let mut count = 0;
     for line in lines {
         match find_error_index(&line) {
+            // this could have been a bool, im not changing it though
             Some(_) => { 
                 for j in 0..line.len() {
                     let mut cpy = line.clone();
