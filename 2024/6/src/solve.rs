@@ -1,9 +1,10 @@
-use std::{char, env::consts, error::Error, f32::DIGITS, usize};
+use std::{char, env::consts, error::Error, f32::DIGITS, str, usize};
 
 const UP: &str = &"^";
 const DOWN: &str = &"v";
 const LEFT: &str = &"<";
 const RIGHT: &str = &">";
+const OBSTACLE: &str = &"#";
 
 enum Direction {
     UP,
@@ -12,18 +13,23 @@ enum Direction {
     RIGHT
 }
 
-type Map = Vec<Vec<String>>;
+struct Map {
+    Map: Vec<Vec<String>>,
+}
 
 struct Guard{
-    Position: (i32,i32),
+    // x, y coordinates
+    Position: (i32, i32),
     Direction: Direction,
 }
 
 pub fn solve_t1(input: &str) -> Result<i32, String> {
     let mut count = 0;
-    count += 1;
 
-    let (map, guard) = make_map(input)?;
+    let map = Map::new(&input);
+    let mut guard = Guard::new(&input);
+
+    count = guard.patrol(map);
 
     Ok(count)
 }
@@ -40,34 +46,87 @@ enum SolveError {
     ParseError
 }
 
-
-fn make_map(input: &str) -> Result<(Map, Guard), String> {
-    let mut guard: Guard = Guard { Position: (0,0), Direction: Direction::RIGHT };
-    let map = input
-        .split("\n")
-        .collect::<Vec<&str>>()
-        .iter()
-        .enumerate()
-        .map(|(i,v)| {
-            let mut line = vec![];
-            for (pos, char) in v.chars().enumerate() {
-                let mut char = char.to_string();
-                if !(char == "." || char == "#"){
-                    guard = Guard::new(pos, i, &char);
-                    char = ".".to_string();
+impl Map {
+    fn new(input: &str) -> Map {
+        let mut map = Map{Map: vec![vec![]]};
+        let mapper = input
+            .split("\n")
+            .collect::<Vec<&str>>()
+            .iter()
+            .map(|v| {
+                let mut line = vec![];
+                for char in v.chars() {
+                    let mut char = char.to_string();
+                    if !(char == "." || char == "#") {
+                        char = ".".to_string();
+                    }
+                    line.push(char);
                 }
-                line.push(char);
-            }
-            line
-        })
-        .collect();
+                line
+            })
+            .collect();
 
-    Ok((map,guard))
+        map.Map = mapper;
+        map
+    }
+
+    fn set_visited(&mut self, x: i32, y: i32) {
+        let row = self.Map.get_mut(y as usize).unwrap();
+        let mut field = row.get_mut(x as usize).unwrap();
+
+        *field = "X".to_string();
+    }
+
+    fn is_out_of_bounds(&self, x: i32, y: i32) -> bool {
+        let y_bound = self.Map.len();
+        let x_bound = self.Map.get(0).unwrap().len();
+    
+        if x < 0 || x >= x_bound as i32 {
+            return true;
+        }
+        if y < 0 || y >= y_bound as i32 {
+            return true;
+        }
+    
+        return false;
+    }
+
+    fn visited_field_count(&self) -> i32 {
+        self.Map
+            .iter()
+            .map(|line| {
+                line
+                    .iter()
+                    .filter(|field| **field == "X")
+                    .map(|_| 1)
+                    .sum::<i32>()
+        })
+        .sum()
+    }
+
+    fn get_tile(&self, x: i32, y: i32) -> &str {
+        let row = self.Map.get(y as usize).unwrap();
+        row.get(x as usize).unwrap()
+    }
 }
 
+
 impl Guard {
-    fn new(x: usize, y: usize, direction: &str) -> Guard {
-        let dir = Guard::parse_direction(direction);
+    fn new(input: &str) -> Guard {
+        
+        let (mut x, mut y, mut char) = (0,0,"".to_string());
+        for (ypos, line) in input.split("\n").enumerate(){
+            for (xpos, field ) in line.chars().enumerate() {
+                let field = field.to_string();
+                if field != "." && field != "#" {
+                    x = xpos;
+                    y = ypos;
+                    char = field;
+                }
+            }
+        };
+
+        let dir = Guard::parse_direction(&char);
         return Guard{ Position: (x as i32, y as i32), Direction: dir };
     }
 
@@ -89,5 +148,29 @@ impl Guard {
             Direction::LEFT => {self.Direction = Direction::UP}
         }
     }
+
+    fn patrol(&mut self, mut map: Map) -> i32 {
+        loop {
+            map.set_visited(self.Position.0, self.Position.1);
+
+            let (x,y) = match self.Direction {
+                Direction::UP => (self.Position.0, self.Position.1-1),
+                Direction::RIGHT => (self.Position.0+1, self.Position.1),
+                Direction::DOWN => (self.Position.0, self.Position.1+1),
+                Direction::LEFT => (self.Position.0-1, self.Position.1)
+            };
+            if map.is_out_of_bounds(x, y) {
+                break;
+            }
+            if map.get_tile(x, y) == OBSTACLE {
+                self.rotate_dir();
+                continue; 
+            }
+            self.Position = (x,y);
+        }
+        map.visited_field_count()
+    }
     
 }
+
+
