@@ -41,11 +41,6 @@ pub fn solve_t2(input: &str) -> i32 {
     return count;
 }
 
-#[derive(Debug)]
-enum SolveError {
-    ParseError
-}
-
 impl Map {
     fn new(input: &str) -> Map {
         let mut map = Map{Map: vec![vec![]]};
