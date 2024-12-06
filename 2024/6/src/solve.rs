@@ -12,7 +12,7 @@ enum Direction {
     RIGHT
 }
 
-type Map<'a> = Vec<Vec<&'a String>>;
+type Map = Vec<Vec<String>>;
 
 struct Guard{
     Position: (i32,i32),
@@ -41,9 +41,8 @@ enum SolveError {
 }
 
 
-fn make_map(input: &str) -> Result<(Vec<Vec<String>>, Guard), String> {
+fn make_map(input: &str) -> Result<(Map, Guard), String> {
     let mut guard: Guard = Guard { Position: (0,0), Direction: Direction::RIGHT };
-
     let map = input
         .split("\n")
         .collect::<Vec<&str>>()
@@ -51,7 +50,7 @@ fn make_map(input: &str) -> Result<(Vec<Vec<String>>, Guard), String> {
         .enumerate()
         .map(|(i,v)| {
             let mut line = vec![];
-            for (pos, char) in v.as_bytes().iter().enumerate() {
+            for (pos, char) in v.chars().enumerate() {
                 let mut char = char.to_string();
                 if !(char == "." || char == "#"){
                     guard = Guard::new(pos, i, &char);
