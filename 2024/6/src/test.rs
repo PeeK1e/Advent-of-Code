@@ -33,6 +33,6 @@ mod test {
         let input = fs::read_to_string("./input").unwrap();
         let res = solve_t2(&input).unwrap();
         println!("solve: {}", res);
-        //assert_eq!(6, res);
+        assert_eq!(1919, res);
     }
 }
