@@ -1,8 +1,8 @@
 mod test {
-    use std::fs;
-
+    #[allow(unused_imports)]
     use crate::solve::{solve_t1, solve_t2};
 
+    #[allow(dead_code)]
     static INPUT: &str = "";
 
     #[test]
