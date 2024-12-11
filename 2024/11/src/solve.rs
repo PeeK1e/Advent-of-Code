@@ -40,23 +40,20 @@ fn blink(stones: &BTreeMap<u64, u64>, n: u64) -> u64 {
         for (stone, count) in &stones {
             let (l,r) = blink_stone(*stone);
 
-            let blinked_l = match blinked.get(&l) {
-                Some(n) => *n,
-                None => 0,
-            };
-
-            blinked.insert(l, blinked_l + count);
+            if let Some(ele) = blinked.get_mut(&l) {
+                *ele += count;
+            } else {
+                blinked.insert(l, *count);
+            }
 
             if let Some(r) = r {
-                let blinked_r = match blinked.get(&r) {
-                    Some(n) => *n,
-                    None => 0,
-                };
-    
-                blinked.insert(r, blinked_r + count);
+                if let Some(ele) = blinked.get_mut(&r) {
+                    *ele += count;
+                } else {
+                    blinked.insert(r, *count);
+                }
             }
         }
-        //print_stones(&blinked);
         stones = blinked;
     }
     
