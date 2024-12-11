@@ -12,10 +12,18 @@ mod test {
 01329801
 10456732";
 
+    static EX_1: &str = "0090009
+9991598
+9992007
+6543456
+7650987
+8760000
+9870000";
+
     #[test]
     fn sample_t1() {
         let res = solve_t1(&INPUT).unwrap();
-
+        println!("{res}");
         assert_eq!(36, res);
     }
 
@@ -23,7 +31,7 @@ mod test {
     fn sample_t2() {
         let res = solve_t2(&INPUT).unwrap();
 
-        assert_eq!(0, res);
+        assert_eq!(81, res);
     } 
 
 }

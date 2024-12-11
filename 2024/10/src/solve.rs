@@ -1,154 +1,127 @@
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, f32::consts::E, path};
 
-const TRAIL: [&str; 10] = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
-const TRAIL_BEGIN: &str = "0";
-const TAIL_LEN: usize = 10;
+struct Tile {
+    value: u8,
+    visited: bool,
+}
 
 #[allow(unused_variables,unused_mut,unused_assignments)]
 pub fn solve_t1(input: &str) -> Result<i64, String> {
     let mut count = 0;
 
-    let (map, h, w) = make_trail_map(input);
+    let chart = make_chart(input);
 
-    let trails = find_trail(&map, h, w);
+    let mut trail_starts = vec![];
 
-    let count = get_trail_head_scores(&trails);
+    for (y,line) in chart.iter().enumerate() {
+        for (x, field) in line.iter().enumerate() {
+            if *field == 0 {
+                trail_starts.push((x,y));
+            }
+        }
+    } 
+    
+    for (x,y) in trail_starts {
+        let mut points: BTreeMap<(usize,usize), usize> = BTreeMap::new();
+        search_path_endpoint(&chart, x, y, &mut points);
+        let c = points.len();
+        println!("{c}");
+        count += c;
+    } 
 
-    Ok(count) 
+    Ok(count as i64) 
 }
 
 #[allow(unused_variables,unused_mut)]
 pub fn solve_t2(input: &str) -> Result<i64, String> {
     let mut count = 0;
 
+    let chart = make_chart(input);
+
+    let mut trail_starts = vec![];
+
+    for (y,line) in chart.iter().enumerate() {
+        for (x, field) in line.iter().enumerate() {
+            if *field == 0 {
+                trail_starts.push((x,y));
+            }
+        }
+    } 
+    
+    for (x,y) in trail_starts {
+        let mut points: BTreeMap<(usize,usize), usize> = BTreeMap::new();
+        search_path_endpoint(&chart, x, y, &mut points);
+        let c = points.iter().map(|(_,i)| *i as i64).sum::<i64>();
+        count += c;
+    } 
+
+
     Ok(count) 
 }
 
-fn make_trail_map(raw: &str) -> (Vec<Vec<String>>, usize, usize) {
-    let map: Vec<Vec<String>> = raw
+fn make_chart(input: &str) -> Vec<Vec<u8>> {
+    input
         .split("\n")
         .map(|line| {
             line
                 .chars()
-                .map(|c| c.to_string())
-                .collect::<Vec<String>>()
+                .map(|c| c.to_digit(10).unwrap() as u8)
+                .collect::<Vec<u8>>()
         })
-        .collect();
-
-    let height = map.len();
-    let width = map.get(0).unwrap().len();
-
-    (map, height, width)
+        .collect::<Vec<Vec<u8>>>()
 }
 
-fn find_trail(map: &Vec<Vec<String>>, heigth: usize, width: usize) -> Vec<Vec<(usize,usize)>> {
-    let mut trails: Vec<Vec<(usize,usize)>> = vec![vec![]];
+fn search_path_endpoint(chart: &Vec<Vec<u8>>, x: usize, y: usize, points: &mut BTreeMap<(usize,usize), usize>) {
+    let current_tile = chart.get(y).unwrap().get(x).unwrap();
 
-    for y in 0..heigth {
-        for x in 0..width {
-            let c = map.get(y).unwrap().get(x).unwrap();
-            match c.as_str() {
-                TRAIL_BEGIN => {
-                    if let Some(path) = find_path(map, x, y, heigth, width){
-                        trails.push(path);
-                    };
-                }
-                _ => continue,
-            }
+    if *current_tile == 9 {
+        if let Some(n) = points.get_mut(&(x,y)) {
+            *n += 1;
+        } else {
+            points.insert((x,y), 1);
+        }
+        return;
+    }
+
+    //up
+    if let Some((x,y)) = is_ok(chart, x as isize, y as isize - 1) {
+        let tile = *chart.get(y).unwrap().get(x).unwrap();
+        if  tile as isize - *current_tile as isize == 1 && *current_tile < tile {
+            search_path_endpoint(chart, x, y, &mut *points);
         }
     }
-    trails
+    //right
+    if let Some((x,y)) = is_ok(chart, (x+1) as isize, y as isize) {
+        let tile = *chart.get(y).unwrap().get(x).unwrap();
+        if tile as isize - *current_tile as isize == 1 && *current_tile < tile {
+            search_path_endpoint(chart, x, y, &mut *points);
+        }
+    }
+    //down
+    if let Some((x,y)) = is_ok(chart, x as isize, (y+1) as isize) {
+        let tile = *chart.get(y).unwrap().get(x).unwrap();
+        if  tile as isize - *current_tile as isize == 1 && *current_tile < tile {
+            search_path_endpoint(chart, x, y, &mut *points);
+        }
+    }
+    //left
+    if let Some((x,y)) = is_ok(chart, x as isize - 1, y as isize) {
+        let tile = *chart.get(y).unwrap().get(x).unwrap();
+        if  tile as isize - *current_tile as isize == 1 && *current_tile < tile {
+            search_path_endpoint(chart, x, y, &mut *points);
+        }
+    }
 }
 
-fn get_trail_head_scores(trails: &Vec<Vec<(usize,usize)>>) -> i64 {
-    let mut tree: BTreeMap<(usize,usize), i64> = BTreeMap::new();
-    for trail in trails {
-        if let Some(head) = trail.last() {
-            match tree.get_mut(head) {
-                Some(ele) => {
-                    *ele += 1;
-                },
-                None => {
-                    tree.insert(head.clone(), 1);
-                },
-            }
-        }
-    }
+fn is_ok(chart: &Vec<Vec<u8>>, x: isize, y: isize) -> Option<(usize,usize)> {
+    let bounds_x = chart.get(0).unwrap().len();
+    let bounds_y = chart.len();
 
-    tree
-        .iter()
-        .map(|(_,i)| i )
-        .sum()
-}
-
-fn find_path(map: &Vec<Vec<String>>, x: usize, y: usize, height: usize, width: usize) -> Option<Vec<(usize,usize)>>{
-    let mut path = vec![];
-    let mut check_x = x;
-    let mut check_y = y;
-    for i in 1..TAIL_LEN {
-        match check_next_tile(map, i, check_x, check_y, height, width) {
-            Some(x) => {
-                path.push(x);
-                (check_x, check_y) = x;
-            },
-            None => return None,
-        }
+    if x < 0 || y < 0 {
+        return None;
     }
-    Some(path)
-}
-
-fn check_next_tile(map: &Vec<Vec<String>>, step: usize, origin_x: usize, origin_y: usize, height: usize, width: usize) -> Option<(usize,usize)> {
-    // up
-    let (x,y) = (origin_x,(origin_y as isize - 1) as usize); 
-    if is_not_oob(x, y, height, width) {
-        let tile = map.get(y).unwrap().get(x).unwrap();
-        if next_char_on_trail(tile, step) {
-            return Some((x,y));
-        }
+    if x as usize >= bounds_x || y as usize >= bounds_y {
+        return None;
     }
-    // left
-    let (x,y) = ((origin_x as isize - 1) as usize,origin_y);
-    if is_not_oob(x, y, height, width) {
-        let tile = map.get(y).unwrap().get(x).unwrap();
-        if next_char_on_trail(tile, step) {
-            return Some((x,y));
-        }
-    }
-
-    // right
-    let (x,y) = (origin_x+1,origin_y);
-    if is_not_oob(x, y, height, width) {
-        let tile = map.get(y).unwrap().get(x).unwrap();
-        if next_char_on_trail(tile, step) {
-            return Some((x,y));
-        }
-    } 
-    // down
-    let (x,y) = (origin_x,origin_y+1); 
-    if is_not_oob(x, y, height, width) {
-        let tile = map.get(y).unwrap().get(x).unwrap();
-        if next_char_on_trail(tile, step) {
-            return Some((x,y));
-        }
-    }
-
-    None
-}
-
-fn next_char_on_trail(map_tile: &str, step: usize) -> bool {
-    let next_ok_tile = TRAIL[step];
-    if map_tile == next_ok_tile {
-        return true;
-    }
-    return false;
-}
-
-fn is_not_oob(x: usize, y: usize, height: usize, width: usize) -> bool {
-    if x >= isize::MAX as usize || y >= isize::MAX as usize {
-        return false;
-    }
-    if x >= width || y >= height {
-        return false;
-    }
-    return true;
+    Some((x as usize, y as usize))
 }
