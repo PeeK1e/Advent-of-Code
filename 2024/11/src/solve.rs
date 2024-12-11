@@ -1,4 +1,4 @@
-use std::{sync::{mpsc, Arc}, thread};
+use std::{collections::BTreeMap, sync::{mpsc, Arc}, thread};
 
 
 #[allow(unused_variables,unused_mut)]
@@ -7,23 +7,7 @@ pub fn solve_t1(input: &str) -> Result<u64, String> {
 
     let stones = make_stones(input);
 
-    let (tx,rx) = mpsc::channel();
-    let txarc = Arc::new(tx);
-
-    let len = stones.len();
-    for stone in stones {   
-        let copy_tx = txarc.clone();
-        thread::spawn(move || {
-            println!("Thread Spawned");
-            let val = blink2([stone, 0], 1, 0, 25);
-            copy_tx.send(val).unwrap();
-        });
-    }
-
-    for _ in 0..len {
-        count += rx.recv().unwrap();
-        println!("got message");
-    }
+    count = blink(&stones, 25);
 
     Ok(count)
 }
@@ -34,53 +18,63 @@ pub fn solve_t2(input: &str) -> Result<u64, String> {
 
     let stones = make_stones(input);
 
-    let (tx,rx) = mpsc::channel();
-    let txarc = Arc::new(tx);
-
-    let len = stones.len();
-    for stone in stones {   
-        let copy_tx = txarc.clone();
-        thread::spawn(move || {
-            println!("Thread Spawned");
-            let val = blink2([stone, 0], 1, 0, 75);
-            copy_tx.send(val).unwrap();
-        });
-    }
-
-    for _ in 0..len {
-        count += rx.recv().unwrap();
-        println!("got message");
-    }
+    count = blink(&stones, 75);
 
     Ok(count)
 }
 
-fn make_stones(input: &str) -> Vec<u64> {
+fn make_stones(input: &str) -> BTreeMap<u64, u64> {
     input
         .split(" ")
         .map(|stone| {
-            stone.parse::<u64>().unwrap()
+            (stone.parse::<u64>().unwrap(), 1)
         })
-        .collect::<Vec<u64>>()
+        .collect::<BTreeMap<u64,u64>>()
 }
 
-fn blink2(stones: [u64; 2], len: usize, n: u64, stop: u64) -> u64 {
-    if n >= stop {
-        return len as u64;
-    }
+fn blink(stones: &BTreeMap<u64, u64>, n: u64) -> u64 {
+    let mut stones = stones.clone();
 
-    let mut count = 0;
-    for i in 0..len {
-        if stones[i] == 0 {
-            count += blink2([1,0], 1, n+1, stop);
-        } else if letter_count(stones[i]) % 2 == 0 && stones[i] > 9 {
-            let (l,r) = split_number(stones[i]);
-            count += blink2([l,r], 2, n+1, stop);
-        } else {
-            count += blink2( [(stones[i]*2024) as u64, 0], 1, n+1, stop);
+    for _ in 0..n {
+        let mut blinked: BTreeMap<u64,u64> = BTreeMap::new();
+        for (stone, count) in &stones {
+            let (l,r) = blink_stone(*stone);
+
+            let blinked_l = match blinked.get(&l) {
+                Some(n) => *n,
+                None => 0,
+            };
+
+            blinked.insert(l, blinked_l + count);
+
+            if let Some(r) = r {
+                let blinked_r = match blinked.get(&r) {
+                    Some(n) => *n,
+                    None => 0,
+                };
+    
+                blinked.insert(r, blinked_r + count);
+            }
         }
+        //print_stones(&blinked);
+        stones = blinked;
     }
-    return count;
+    
+    stones
+        .iter()
+        .map(|(_,v)| v)
+        .sum()
+}
+
+fn blink_stone(n: u64) -> (u64, Option<u64>) {
+    if n == 0 {
+        return (1,None);
+    }
+    if n >= 10 && letter_count(n) % 2 == 0 {
+        let (l, r) = split_number(n);
+        return (l, Some(r));
+    }
+    return (n*2024, None);
 }
 
 fn letter_count(num: u64) -> u64 {
@@ -105,4 +99,13 @@ fn split_number(num: u64) -> (u64, u64) {
     let right = num % divisor; // Rechte Hälfte
 
     (left, right)
+}
+
+fn print_stones(stones: &BTreeMap<u64,u64>) {
+    println!("---");
+    stones
+        .iter()
+        .for_each(|(i,v)| println!("{}|{}", i , v));
+
+    println!()
 }

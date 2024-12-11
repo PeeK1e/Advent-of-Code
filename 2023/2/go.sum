@@ -1,8 +1,0 @@
-github.com/PeeK1e/Advent-of-Code/lib v0.0.0-20231206165128-2d52b1b379f9 h1:VPkewMS5W/BwsePWIQ4eWBsBWr78YfVO7aUivFRU2a0=
-github.com/PeeK1e/Advent-of-Code/lib v0.0.0-20231206165128-2d52b1b379f9/go.mod h1:6G1o4JlW/SSQE8HA8xj1AB+X4jjlFyjCI+1QQplV3TM=
-github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=
-github.com/google/go-cmp v0.6.0/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
-github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
-github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
-gotest.tools v2.2.0+incompatible h1:VsBPFP1AI068pPrMxtb/S8Zkgf9xEmTLJjfM+P5UIEo=
-gotest.tools v2.2.0+incompatible/go.mod h1:DsYFclhRJ6vuDpmuTbkuFWG+y2sxOXAzmJt81HFBacw=
