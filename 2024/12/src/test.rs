@@ -25,6 +25,18 @@ MIIIIIJJEE
 MIIISIJEEE
 MMMISSJEEE";
 
+    static INPUT_T2_E: &str = "EEEEE
+EXXXX
+EEEEE
+EXXXX
+EEEEE";
+    static INPUT_T2_AB: &str = "AAAAAA
+AAABBA
+AAABBA
+ABBAAA
+ABBAAA
+AAAAAA";
+
     #[test]
     fn sample_t1() {
         let res = solve_t1(&INPUT_SIMPLE).unwrap();
@@ -46,9 +58,23 @@ MMMISSJEEE";
 
     #[test]
     fn sample_t2() {
-        let res = solve_t2(&INPUT_SIMPLE).unwrap();
+        let res = solve_t2(&INPUT_LARGE).unwrap();
 
-        //assert_eq!(0, res);
+        assert_eq!(1206, res);
+    }
+
+    #[test]
+    fn sample_E_t2() {
+        let res = solve_t2(&INPUT_T2_E).unwrap();
+
+        assert_eq!(236, res);
+    } 
+
+    #[test]
+    fn sample_AB_t2() {
+        let res = solve_t2(&INPUT_T2_AB).unwrap();
+
+        assert_eq!(368, res);
     } 
 
 }
