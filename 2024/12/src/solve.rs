@@ -5,10 +5,10 @@ struct Tile {
     value: String,
     edges: RefCell<i8>,
     visited: RefCell<bool>,
-    edge_id_up: RefCell<i32>,
-    edge_id_right: RefCell<i32>,
-    edge_id_down: RefCell<i32>,
-    edge_id_left: RefCell<i32>,
+    edge_id_up: RefCell<(i32,bool)>,
+    edge_id_right: RefCell<(i32,bool)>,
+    edge_id_down: RefCell<(i32,bool)>,
+    edge_id_left: RefCell<(i32,bool)>,
     //pos: (i32,i32),
 }
 
@@ -66,32 +66,32 @@ pub fn solve_t2(input: &str) -> Result<i64, String> {
             let edge_id4 = *field.edge_id_right.borrow();
 
             if let Some(ele) = corners.get_mut(&id) {
-                if edge_id1 != 0 {
-                    ele.1.insert(edge_id1,1);
+                if edge_id1.0 != 0 {
+                    ele.1.insert(edge_id1.0,1);
                 }
-                if edge_id2 != 0 {
-                    ele.1.insert(edge_id2,1);
+                if edge_id2.0 != 0 {
+                    ele.1.insert(edge_id2.0,1);
                 }
-                if edge_id3 != 0 {
-                    ele.1.insert(edge_id3,1);
+                if edge_id3.0 != 0 {
+                    ele.1.insert(edge_id3.0,1);
                 }
-                if edge_id4 != 0 {
-                    ele.1.insert(edge_id4,1);
+                if edge_id4.0 != 0 {
+                    ele.1.insert(edge_id4.0,1);
                 }
                 ele.0 += 1;
             } else {
                 let mut ele = HashMap::new();
-                if edge_id1 != 0 {
-                    ele.insert(edge_id1,1);
+                if edge_id1.0 != 0 {
+                    ele.insert(edge_id1.0,1);
                 }
-                if edge_id2 != 0 {
-                    ele.insert(edge_id2,1);
+                if edge_id2.0 != 0 {
+                    ele.insert(edge_id2.0,1);
                 }
-                if edge_id3 != 0 {
-                    ele.insert(edge_id3,1);
+                if edge_id3.0 != 0 {
+                    ele.insert(edge_id3.0,1);
                 }
-                if edge_id4 != 0 {
-                    ele.insert(edge_id4,1);
+                if edge_id4.0 != 0 {
+                    ele.insert(edge_id4.0,1);
                 }
                 corners.insert(id, (1,ele,value));
             }
@@ -126,10 +126,10 @@ fn make_map(input: &str) -> Vec<Vec<Tile>> {
                         edges: RefCell::new(0),
                         value: ch.to_string(),
                         visited: RefCell::new(false),
-                        edge_id_up: RefCell::new(edge_id),
-                        edge_id_right: RefCell::new(edge_id+1),
-                        edge_id_down: RefCell::new(edge_id+2),
-                        edge_id_left: RefCell::new(edge_id+3),
+                        edge_id_up: RefCell::new((edge_id,false)),
+                        edge_id_right: RefCell::new((edge_id+1,false)),
+                        edge_id_down: RefCell::new((edge_id+2,false)),
+                        edge_id_left: RefCell::new((edge_id+3,false)),
                         //pos: (x as i32, y as i32),
                     }
                 })
@@ -145,41 +145,21 @@ fn find_equal_fields(map: &Vec<Vec<Tile>>) {
             let tile = map.get(y).unwrap().get(x).unwrap();
             let mut edges = 4;
 
-            // check previous
-            if let Some(prev) = map.get(y) {
-                if let Some(prev) = prev.get((x as isize - 1) as usize) {
-                    if prev.value == tile.value {
-                        edges -= 1;
-                        tile.edge_id_left.replace(0);
-                    }
-                }
-            }
-
-            // check above
-            if let Some(prev) = map.get((y as isize - 1) as usize) {
-                if let Some(prev) = prev.get(x) {
-                    if prev.value == tile.value {
-                        edges -= 1;
-                        tile.edge_id_up.replace(0);
-                    }
-                }
-            }
-            // check next
-            if let Some(prev) = map.get(y) {
-                if let Some(prev) = prev.get(x+1) {
-                    if prev.value == tile.value {
-                        edges -= 1;
-                        tile.edge_id_right.replace(0);
-                    }
-                }
-            }
-
-            // check below
-            if let Some(prev) = map.get(y+1) {
-                if let Some(prev) = prev.get(x) {
-                    if prev.value == tile.value {
-                        edges -= 1;
-                        tile.edge_id_down.replace(0);
+            for (i, (dx,dy)) in [(1,0),(-1,0),(0,1),(0,-1)].iter().enumerate() {
+                let (x,y) = ((x as isize + dx) as usize, (y as isize + dy) as usize);
+                if let Some(prev) = map.get(y) {
+                    if let Some(prev) = prev.get(x) {
+                        if prev.value == tile.value {
+                            edges -= 1;
+                            match i {
+                                0 =>  tile.edge_id_right.replace((0,true)),
+                                1 =>  tile.edge_id_left.replace((0,true)),
+                                2 =>  tile.edge_id_down.replace((0,true)),
+                                3 =>  tile.edge_id_up.replace((0,true)),
+                                //this should never trigger
+                                _ => tile.edge_id_right.replace((0,true)),
+                            };
+                        }
                     }
                 }
             }
@@ -193,209 +173,147 @@ fn find_equal_fields(map: &Vec<Vec<Tile>>) {
                 continue;
             }
             tile.visited.replace(true);
-            recursive_search(map, x, y, *tile.id.borrow(), &tile.value, *tile.edge_id_up.borrow(), *tile.edge_id_down.borrow(), *tile.edge_id_right.borrow(),*tile.edge_id_left.borrow());
+            recursive_search(map, x, y, *tile.id.borrow(), &tile.value);
         }
     }
 
-    for _ in 0..10 {
-        reset_visited(map);
-        for y in (0..map.len()).rev() {
-            for x in (0..map.get(0).unwrap().len()).rev(){
-                let tile = map.get(y).unwrap().get(x).unwrap();
-                if tile.visited.borrow().clone() {
-                    continue;
-                }
-                tile.visited.replace(true);
-                recursive_borders(map, x, y, *tile.id.borrow(), &tile.value, *tile.edge_id_up.borrow(), *tile.edge_id_down.borrow(), *tile.edge_id_right.borrow(),*tile.edge_id_left.borrow());
+    for y in 0..map.len() {
+        for x in 0..map.get(0).unwrap().len(){
+            let tile = map.get(y).unwrap().get(x).unwrap();
+            if tile.edge_id_down.borrow().1 {
+                continue;
             }
-        } 
-    }
-}
-
-fn recursive_search(map: &Vec<Vec<Tile>>, map_x: usize, map_y: usize, id: i32, value: &str, up: i32, down: i32 , right: i32, left: i32) {
-    // check next
-    let (x,y) = (map_x+1,map_y);
-    if let Some(prev) = map.get(y) {
-        if let Some(prev) = prev.get(x) {
-            if prev.value == value && !*prev.visited.borrow() {
-                prev.id.replace(id);
-                prev.visited.replace(true);
-                recursive_search(map, x, y, id, value, *prev.edge_id_up.borrow(), *prev.edge_id_down.borrow(), *prev.edge_id_right.borrow(),*prev.edge_id_left.borrow());
+            if tile.edge_id_down.borrow().0 != 0 {
+                let id = tile.edge_id_down.borrow().0;
+                tile.edge_id_down.replace((id,true));
+                recursive_borders_down(map, x, y, id, &tile.value);
             }
         }
     }
 
-    // check previous
-    let (x,y) = ((map_x as isize - 1) as usize, map_y);
-    if let Some(prev) = map.get(y) {
-        if let Some(prev) = prev.get(x) {
-            if prev.value == value && !*prev.visited.borrow() {
-                prev.id.replace(id);
-                prev.visited.replace(true);
-                recursive_search(map, x, y, id, value, *prev.edge_id_up.borrow(), *prev.edge_id_down.borrow(), *prev.edge_id_right.borrow(),*prev.edge_id_left.borrow());
+    for y in 0..map.len() {
+        for x in 0..map.get(0).unwrap().len(){
+            let tile = map.get(y).unwrap().get(x).unwrap();
+            if tile.edge_id_up.borrow().1 {
+                continue;
+            }
+            if tile.edge_id_up.borrow().0 != 0 {
+                let id = tile.edge_id_up.borrow().0;
+                tile.edge_id_up.replace((id,true));
+                recursive_borders_up(map, x, y, id, &tile.value);
             }
         }
     }
 
-
-    // check above
-    let (x,y) = (map_x, (map_y as isize - 1) as usize);
-    if let Some(prev) = map.get(y) {
-        if let Some(prev) = prev.get(x) {
-            if prev.value == value && !*prev.visited.borrow() {
-                prev.id.replace(id);
-                prev.visited.replace(true);
-                recursive_search(map, x, y, id, value, *prev.edge_id_up.borrow(), *prev.edge_id_down.borrow(), *prev.edge_id_right.borrow(),*prev.edge_id_left.borrow());
+    for y in 0..map.len() {
+        for x in 0..map.get(0).unwrap().len(){
+            let tile = map.get(y).unwrap().get(x).unwrap();
+            if tile.edge_id_left.borrow().1 {
+                continue;
+            }
+            if tile.edge_id_left.borrow().0 != 0 {
+                let id = tile.edge_id_left.borrow().0;
+                tile.edge_id_left.replace((id,true));
+                recursive_borders_left(map, x, y, id, &tile.value);
             }
         }
     }
-
-    // check below
-    let (x,y) = (map_x, map_y+1);
-    if let Some(prev) = map.get(y) {
-        if let Some(prev) = prev.get(x) {
-            if prev.value == value && !*prev.visited.borrow() {
-                prev.id.replace(id);
-                prev.visited.replace(true);
-                recursive_search(map, x, y, id, value, *prev.edge_id_up.borrow(), *prev.edge_id_down.borrow(), *prev.edge_id_right.borrow(),*prev.edge_id_left.borrow());
+    for y in 0..map.len() {
+        for x in 0..map.get(0).unwrap().len(){
+            let tile = map.get(y).unwrap().get(x).unwrap();
+            if tile.edge_id_right.borrow().1 {
+                continue;
             }
-        }
-    }
-
-}
-
-fn reset_visited(map: &Vec<Vec<Tile>>) {
-    for line in map {
-        for tile in line {
-            tile.visited.replace(false);
+            if tile.edge_id_right.borrow().0 != 0 {
+                let id = tile.edge_id_right.borrow().0;
+                tile.edge_id_right.replace((id,true));
+                recursive_borders_right(map, x, y, id, &tile.value);
+            }
         }
     }
 }
 
-fn recursive_borders(map: &Vec<Vec<Tile>>, map_x: usize, map_y: usize, id: i32, value: &str, up: i32, down: i32 , right: i32, left: i32){ 
-        // check previous
-        let (x,y) = ((map_x as isize - 1) as usize, map_y);
+fn recursive_search(map: &Vec<Vec<Tile>>, map_x: usize, map_y: usize, id: i32, value: &str) {
+    for (x,y) in [(1,0),(-1,0),(0,1),(0,-1)].iter() {
+        let (x,y) = ((map_x as isize+x) as usize, (map_y as isize+y) as usize);
         if let Some(prev) = map.get(y) {
             if let Some(prev) = prev.get(x) {
                 if prev.value == value && !*prev.visited.borrow() {
-                    if *prev.edge_id_down.borrow() != 0 {
-                        if down != 0 {
-                            prev.edge_id_down.replace(down);
-                        }
-                    }
-                    if *prev.edge_id_up.borrow() != 0 {
-                        if up != 0 {
-                            prev.edge_id_up.replace(up);
-                        }
-                    }
-                    if *prev.edge_id_left.borrow() != 0 {
-                        if left != 0 {
-                            prev.edge_id_left.replace(left);
-                        }
-                    }
-                    if *prev.edge_id_right.borrow() != 0 {
-                        if right != 0 {
-                            prev.edge_id_right.replace(right);
-                        }
-                    }
+                    prev.id.replace(id);
                     prev.visited.replace(true);
-                    recursive_borders(map, x, y, id, value, *prev.edge_id_up.borrow(), *prev.edge_id_down.borrow(), *prev.edge_id_right.borrow(),*prev.edge_id_left.borrow());
+                    recursive_search(map, x, y, id, value);
                 }
             }
         }
-    
-        // check above
-        let (x,y) = (map_x, (map_y as isize - 1) as usize);
-        if let Some(prev) = map.get(y) {
-            if let Some(prev) = prev.get(x) {
-                if prev.value == value && !*prev.visited.borrow() {
-                    if *prev.edge_id_down.borrow() != 0 {
-                        if down != 0 {
-                            prev.edge_id_down.replace(down);
-                        }
-                    }
-                    if *prev.edge_id_up.borrow() != 0 {
-                        if up != 0 {
-                            prev.edge_id_up.replace(up);
-                        }
-                    }
-                    if *prev.edge_id_left.borrow() != 0 {
-                        if left != 0 {
-                            prev.edge_id_left.replace(left);
-                        }
-                    }
-                    if *prev.edge_id_right.borrow() != 0 {
-                        if right != 0 {
-                            prev.edge_id_right.replace(right);
-                        }
-                    }
-                    prev.visited.replace(true);
-                    recursive_borders(map, x, y, id, value, *prev.edge_id_up.borrow(), *prev.edge_id_down.borrow(), *prev.edge_id_right.borrow(),*prev.edge_id_left.borrow());
-                }
-            }
-        }
-    
-        // check next
-        let (x,y) = (map_x+1,map_y);
-        if let Some(prev) = map.get(y) {
-            if let Some(prev) = prev.get(x) {
-                if prev.value == value && !*prev.visited.borrow() {
-                    if *prev.edge_id_down.borrow() != 0 {
-                        if down != 0 {
-                            prev.edge_id_down.replace(down);
-                        }
-                    }
-                    if *prev.edge_id_up.borrow() != 0 {
-                        if up != 0 {
-                            prev.edge_id_up.replace(up);
-                        }
-                    }
-                    if *prev.edge_id_left.borrow() != 0 {
-                        if left != 0 {
-                            prev.edge_id_left.replace(left);
-                        }
-                    }
-                    if *prev.edge_id_right.borrow() != 0 {
-                        if right != 0 {
-                            prev.edge_id_right.replace(right);
-                        }
-                    }
-                    prev.visited.replace(true);
-                    recursive_borders(map, x, y, id, value, *prev.edge_id_up.borrow(), *prev.edge_id_down.borrow(), *prev.edge_id_right.borrow(),*prev.edge_id_left.borrow());
-                }
-            }
-        }
-   
+    }
+}
 
-        // check below
-        let (x,y) = (map_x, map_y+1);
+// fn reset_visited(map: &Vec<Vec<Tile>>) {
+//     for line in map {
+//         for tile in line {
+//             tile.visited.replace(false);
+//         }
+//     }
+// }
+
+fn recursive_borders_down(map: &Vec<Vec<Tile>>, map_x: usize, map_y: usize, id: i32, value: &str){
+    for (x,y) in [(0,-1),(1,0),(-1,0),(0,1)].iter() {
+        let (x,y) = ((map_x as isize+x) as usize, (map_y as isize+y) as usize); 
         if let Some(prev) = map.get(y) {
             if let Some(prev) = prev.get(x) {
-                if prev.value == value && !*prev.visited.borrow() {
-                    if *prev.edge_id_down.borrow() != 0 {
-                        if down != 0 {
-                            prev.edge_id_down.replace(down);
-                        }
+                if prev.value == value && !prev.edge_id_down.borrow().1 {
+                    if prev.edge_id_down.borrow().0 != 0 {
+                        prev.edge_id_down.replace((id,true));
+                        recursive_borders_down(map, x, y, id, value);
                     }
-                    if *prev.edge_id_up.borrow() != 0 {
-                        if up != 0 {
-                            prev.edge_id_up.replace(up);
-                        }
-                    }
-                    if *prev.edge_id_left.borrow() != 0 {
-                        if left != 0 {
-                            prev.edge_id_left.replace(left);
-                        }
-                    }
-                    if *prev.edge_id_right.borrow() != 0 {
-                        if right != 0 {
-                            prev.edge_id_right.replace(right);
-                        }
-                    }
-                    prev.visited.replace(true);
-                    recursive_borders(map, x, y, id, value, *prev.edge_id_up.borrow(), *prev.edge_id_down.borrow(), *prev.edge_id_right.borrow(),*prev.edge_id_left.borrow());
                 }
             }
         }
-    
+    }
+}
+
+fn recursive_borders_up(map: &Vec<Vec<Tile>>, map_x: usize, map_y: usize, id: i32, value: &str){
+    for (x,y) in [(0,-1),(1,0),(-1,0),(0,1)].iter() {
+        let (x,y) = ((map_x as isize+x) as usize, (map_y as isize+y) as usize); 
+        if let Some(prev) = map.get(y) {
+            if let Some(prev) = prev.get(x) {
+                if prev.value == value && !prev.edge_id_up.borrow().1 {
+                    if prev.edge_id_up.borrow().0 != 0 {
+                        prev.edge_id_up.replace((id,true));
+                        recursive_borders_up(map, x, y, id, value);
+                    }
+                }
+            }
+        }
+    }
+}
+fn recursive_borders_left(map: &Vec<Vec<Tile>>, map_x: usize, map_y: usize, id: i32, value: &str){
+    for (x,y) in [(0,-1),(1,0),(-1,0),(0,1)].iter() {
+        let (x,y) = ((map_x as isize+x) as usize, (map_y as isize+y) as usize); 
+        if let Some(prev) = map.get(y) {
+            if let Some(prev) = prev.get(x) {
+                if prev.value == value && !prev.edge_id_left.borrow().1 {
+                    if prev.edge_id_left.borrow().0 != 0 {
+                        prev.edge_id_left.replace((id,true));
+                        recursive_borders_left(map, x, y, id, value);
+                    }
+                }
+            }
+        }
+    }
+}
+fn recursive_borders_right(map: &Vec<Vec<Tile>>, map_x: usize, map_y: usize, id: i32, value: &str){
+    for (x,y) in [(0,-1),(1,0),(-1,0),(0,1)].iter() {
+        let (x,y) = ((map_x as isize+x) as usize, (map_y as isize+y) as usize); 
+        if let Some(prev) = map.get(y) {
+            if let Some(prev) = prev.get(x) {
+                if prev.value == value && !prev.edge_id_right.borrow().1 {
+                    if prev.edge_id_right.borrow().0 != 0 {
+                        prev.edge_id_right.replace((id,true));
+                        recursive_borders_right(map, x, y, id, value);
+                    }
+                }
+            }
+        }
+    }
 }
