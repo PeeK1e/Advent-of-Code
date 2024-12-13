@@ -1,119 +1,77 @@
-
-#[allow(unused_variables,unused_mut)]
-pub fn solve_t1(input: &str) -> Result<i128, String> {
-    let mut count = 0;
-
-    let list = make_list(input);
-
-    for ele in list {
-        let tuple =claw_price(ele.0, ele.1);
-        if tuple != (0,0) {
-            count += tuple.0 * 3 + tuple.1;
-        }
-    }
-
-    Ok(count as i128) 
+struct Machine {
+    x1: i128,
+    y1: i128,
+    x2: i128,
+    y2: i128,
+    xtarget: i128,
+    ytarget: i128,
 }
 
 #[allow(unused_variables,unused_mut)]
-pub fn solve_t2(input: &str) -> Result<i128, String> {
-    let mut count = 0;
+pub fn solve_t1(input: &str) -> Result<i128, String> {
+    let p = parse(input,0); 
 
-    let list = make_list(input);
-
-    // this will run forever
-    for ((tx,ax,ay),(ty, bx,by)) in list {
-        //let tuple = wirsing((tx+10000000000000,ax,ay),(ty+10000000000000, bx,by));
-        let tuple = wirsing((tx,ax,ay),(ty, bx,by));
-        if tuple != (0,0) {
-            count += tuple.0 * 3 + tuple.1;
+    let count = p.iter().map(|m| {
+        if let Some((a,b)) = wirsing(m) {
+            3 * a + b
+        } else {
+            0
         }
-    }
+    }).sum();
 
     Ok(count) 
 }
 
-fn make_list(input: &str) -> Vec<((i128,i128,i128),(i128,i128,i128))> {
+#[allow(unused_variables,unused_mut)]
+pub fn solve_t2(input: &str) -> Result<i128, String> {
+    let p = parse(input,10000000000000); 
+
+    let count = p.iter().map(|m| {
+        if let Some((a,b)) = wirsing(m) {
+            3 * a + b
+        } else {
+            0
+        }
+    }).sum();
+
+    Ok(count) 
+}
+
+fn parse(input: &str, modifyer: i128) -> Vec<Machine> {
     input
         .split("\n\n")
-        .map(|block|{
-            let split = block.split("\n").collect::<Vec<&str>>();
-            // line 0
-            let line = split[0];
-            let line = line.replace("Button A: X+", "");
-            let line = line.replace(" Y+", "");
-            let line = line.split(",").collect::<Vec<&str>>();
-            let ax = line[0].parse::<i128>().unwrap();
-            let ay = line[1].parse::<i128>().unwrap();
-            // line 1
-            let line = split[1];
-            let line = line.replace("Button B: X+", "");
-            let line = line.replace(" Y+", "");
-            let line = line.split(",").collect::<Vec<&str>>();
-            let bx = line[0].parse::<i128>().unwrap();
-            let by = line[1].parse::<i128>().unwrap();
-            // line 2
-            let line = split[2];
-            let line = line.replace("Prize: X=", "");
-            let line = line.replace(" Y=", "");
-            let line = line.split(",").collect::<Vec<&str>>();
-            let a = line[0].parse::<i128>().unwrap();
-            let b = line[1].parse::<i128>().unwrap();
-
-            ((a,ax,ay),(b,bx,by))      
-        })
-        .collect::<Vec<((i128,i128,i128),(i128,i128,i128))>>()
-}
-
-// a tuple is build like this (target, inc_x, inc_y)
-fn claw_price(eq1: (i128, i128, i128), eq2: (i128, i128, i128)) -> (i128, i128) {
-    let (tx,ty) = (eq1.0,eq2.0);
-    let (ax,ay) = (eq1.1,eq1.2);
-    let (bx,by) = (eq2.1,eq2.2);
-
-    let mut count_a = 0;
-    while ay*count_a < ty && ax*count_a < tx {
-        let mut count_b = 0;
-        while (ay*count_a + by * count_b) <= ty && (ax*count_a + bx * count_b) <= tx {
-            let eqa = ax*count_a + bx * count_b;
-            let eqb = ay*count_a + by * count_b;
-            if eqa == tx && eqb == ty {
-                return (count_a,count_b);
+        .map(|claw|{
+            let split = claw
+                .split(&['+', ',', '\n', '=']).collect::<Vec<_>>();
+            Machine{
+                x1: split[1].parse::<i128>().unwrap(),
+                y1: split[3].parse::<i128>().unwrap(),
+                x2: split[5].parse::<i128>().unwrap(),
+                y2: split[7].parse::<i128>().unwrap(),
+                xtarget: modifyer + split[9].parse::<i128>().unwrap(),
+                ytarget: modifyer + split[11].parse::<i128>().unwrap(),
             }
-            count_b += 1;
-        }
-        count_a += 1;
-    }
-
-
-    return (0,0);
+        })
+        .collect::<Vec<Machine>>()
 }
 
-pub fn wirsing(a: (i128, i128, i128), b: (i128, i128, i128)) -> (i128, i128) {
-    let (at, ax, ay) = (a.0, a.1, a.2);
-    let (bt, bx, by) = (b.0, b.1, b.2);
-    // det(A)
-    let det = ax * by - bx * ay;
+fn wirsing(m: &Machine) -> Option<(i128,i128)> {
+    let det = m.x1 * m.y2 - m.y1 * m.x2;
     if det == 0 {
-        return (0, 0);
+        return None;
     }
 
-    // det(A¹)
-    let det_a = at * by - bt * ay; 
-    let a = det_a/det;
+    let det_a = m.xtarget * m.y2 - m.x2 * m.ytarget;
+    let det_b = m.x1 * m.ytarget - m.xtarget * m.y1;
 
-    // det(A²)
-    let det_b = ax * bt - bx * at;
-    let b = det_b/det;
-
-    if det_a % det != 0 || det_b % det != 0{
-        return (0, 0);
+    if det_a % det != 0 || det_b % det != 0 {
+       return None;
     }
+    let a = det_a / det;
+    let b = det_b / det;
 
-    (a, b)
+    if a < 0 || b < 0 {
+        return None;
+    }
+    return Some((a,b));
 }
-
-// println!("\n\n\n\n");
-// println!("{} = {}x + {}y", at, ax, ay);
-// println!("{} = {}x + {}y", bt, bx, by);
-// println!("A: {} / B: {}", a, b);

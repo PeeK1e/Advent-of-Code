@@ -1,5 +1,5 @@
 mod test {
-    use crate::solve::{self};
+    use crate::solve::wirsing;
     #[allow(unused_imports)]
     use crate::solve::{solve_t1, solve_t2};
 
@@ -25,6 +25,13 @@ Prize: X=18641, Y=10279";
         let res = solve_t1(&INPUT).unwrap();
 
         assert_eq!(480, res);
+    }
+
+    #[test]
+    fn test_cramer_rule() {
+        let res = wirsing((3,1,2), (6,4,5));
+        
+        assert_eq!((-1,2), res);
     }
 
     #[test]
