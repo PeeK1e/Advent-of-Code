@@ -19,7 +19,7 @@ Nothing here is optimized, nothing should be used as "prod" code. I solve tasks 
 |  9  |      |      |      |      | ⭐⭐ |     |
 | 10  |      |      |      |      | ⭐⭐ |     |
 | 11  |      |      |      |      | ⭐⭐ |     |
-| 12  |      |      |      |      |      |     |
+| 12  |      |      |      |      |  ⭐  |     |
 | 13  |      |      |      |      |      |     |
 | 14  |      |      |      |      |      |     |
 | 15  |      |      |      |      |      |     |

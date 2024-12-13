@@ -39,7 +39,7 @@ pub fn solve_t1(input: &str) -> Result<i64, String> {
 
     for (_, (field_count, edges, value)) in hashmap {
         count +=  (field_count * edges) as i64;
-        println!("Field {} has {} tiles with {} edges", value, field_count, edges);
+        //println!("Field {} has {} tiles with {} edges", value, field_count, edges);
     }
 
     Ok(count) 
@@ -101,7 +101,7 @@ pub fn solve_t2(input: &str) -> Result<i64, String> {
     for (field_id, corner_id) in corners {
         let sum = corner_id.1.iter().map(|(_,i)| i).sum::<i32>();
         count +=  corner_id.0 as i32 * sum;
-        println!("Field Letter {} / id: {} has {} edges with {} fields", corner_id.2, field_id, sum, corner_id.0);
+        //println!("Field Letter {} / id: {} has {} edges with {} fields", corner_id.2, field_id, sum, corner_id.0);
     }
 
     Ok(count as i64) 
