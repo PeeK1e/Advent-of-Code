@@ -1,30 +1,30 @@
 
 #[allow(unused_variables,unused_mut)]
-pub fn solve_t1(input: &str) -> Result<i64, String> {
+pub fn solve_t1(input: &str) -> Result<i128, String> {
     let mut count = 0;
 
     let list = make_list(input);
 
     for ele in list {
-        let tuple = claw_price(ele.0, ele.1);
+        let tuple =claw_price(ele.0, ele.1);
         if tuple != (0,0) {
             count += tuple.0 * 3 + tuple.1;
         }
     }
 
-    Ok(count as i64) 
+    Ok(count as i128) 
 }
 
 #[allow(unused_variables,unused_mut)]
-pub fn solve_t2(input: &str) -> Result<i64, String> {
+pub fn solve_t2(input: &str) -> Result<i128, String> {
     let mut count = 0;
 
     let list = make_list(input);
 
     // this will run forever
     for ((tx,ax,ay),(ty, bx,by)) in list {
-        println!("x:{},y:{}", tx+10000000000000, ty+10000000000000);
-        let tuple = claw_price((tx+10000000000000,ax,ay),(ty+10000000000000, bx,by));
+        //let tuple = wirsing((tx+10000000000000,ax,ay),(ty+10000000000000, bx,by));
+        let tuple = wirsing((tx,ax,ay),(ty, bx,by));
         if tuple != (0,0) {
             count += tuple.0 * 3 + tuple.1;
         }
@@ -33,7 +33,7 @@ pub fn solve_t2(input: &str) -> Result<i64, String> {
     Ok(count) 
 }
 
-fn make_list(input: &str) -> Vec<((i64,i64,i64),(i64,i64,i64))> {
+fn make_list(input: &str) -> Vec<((i128,i128,i128),(i128,i128,i128))> {
     input
         .split("\n\n")
         .map(|block|{
@@ -43,30 +43,30 @@ fn make_list(input: &str) -> Vec<((i64,i64,i64),(i64,i64,i64))> {
             let line = line.replace("Button A: X+", "");
             let line = line.replace(" Y+", "");
             let line = line.split(",").collect::<Vec<&str>>();
-            let ax = line[0].parse::<i64>().unwrap();
-            let ay = line[1].parse::<i64>().unwrap();
+            let ax = line[0].parse::<i128>().unwrap();
+            let ay = line[1].parse::<i128>().unwrap();
             // line 1
             let line = split[1];
             let line = line.replace("Button B: X+", "");
             let line = line.replace(" Y+", "");
             let line = line.split(",").collect::<Vec<&str>>();
-            let bx = line[0].parse::<i64>().unwrap();
-            let by = line[1].parse::<i64>().unwrap();
+            let bx = line[0].parse::<i128>().unwrap();
+            let by = line[1].parse::<i128>().unwrap();
             // line 2
             let line = split[2];
             let line = line.replace("Prize: X=", "");
             let line = line.replace(" Y=", "");
             let line = line.split(",").collect::<Vec<&str>>();
-            let a = line[0].parse::<i64>().unwrap();
-            let b = line[1].parse::<i64>().unwrap();
+            let a = line[0].parse::<i128>().unwrap();
+            let b = line[1].parse::<i128>().unwrap();
 
             ((a,ax,ay),(b,bx,by))      
         })
-        .collect::<Vec<((i64,i64,i64),(i64,i64,i64))>>()
+        .collect::<Vec<((i128,i128,i128),(i128,i128,i128))>>()
 }
 
 // a tuple is build like this (target, inc_x, inc_y)
-fn claw_price(eq1: (i64, i64, i64), eq2: (i64, i64, i64)) -> (i64, i64) {
+fn claw_price(eq1: (i128, i128, i128), eq2: (i128, i128, i128)) -> (i128, i128) {
     let (tx,ty) = (eq1.0,eq2.0);
     let (ax,ay) = (eq1.1,eq1.2);
     let (bx,by) = (eq2.1,eq2.2);
@@ -88,3 +88,32 @@ fn claw_price(eq1: (i64, i64, i64), eq2: (i64, i64, i64)) -> (i64, i64) {
 
     return (0,0);
 }
+
+pub fn wirsing(a: (i128, i128, i128), b: (i128, i128, i128)) -> (i128, i128) {
+    let (at, ax, ay) = (a.0, a.1, a.2);
+    let (bt, bx, by) = (b.0, b.1, b.2);
+    // det(A)
+    let det = ax * by - bx * ay;
+    if det == 0 {
+        return (0, 0);
+    }
+
+    // det(A¹)
+    let det_a = at * by - bt * ay; 
+    let a = det_a/det;
+
+    // det(A²)
+    let det_b = ax * bt - bx * at;
+    let b = det_b/det;
+
+    if det_a % det != 0 || det_b % det != 0{
+        return (0, 0);
+    }
+
+    (a, b)
+}
+
+// println!("\n\n\n\n");
+// println!("{} = {}x + {}y", at, ax, ay);
+// println!("{} = {}x + {}y", bt, bx, by);
+// println!("A: {} / B: {}", a, b);

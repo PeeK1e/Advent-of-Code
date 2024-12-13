@@ -8,7 +8,6 @@ edition = "2021"
 [dependencies]
 criterion = "0.5.1"
 
-
 [[bench]]
 name = "benches"
 harness = false
