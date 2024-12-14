@@ -21,7 +21,7 @@ Nothing here is optimized, nothing should be used as "prod" code. I solve tasks 
 | 11  |      |      |      |      | ⭐⭐ |     |
 | 12  |      |      |      |      | ⭐⭐ |     |
 | 13  |      |      |      |      | ⭐⭐ |     |
-| 14  |      |      |      |      |      |     |
+| 14  |      |      |      |      | ⭐⭐ |     |
 | 15  |      |      |      |      |      |     |
 | 16  |      |      |      |      |      |     |
 | 17  |      |      |      |      |      |     |
