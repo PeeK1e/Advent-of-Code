@@ -133,13 +133,9 @@ func solve_2(path string, lx int, ly int) int {
 		chart[i] = row
 	}
 	i := 0
+	outline := ""
 	for {
 		i++
-		// clean map
-		for _, robo := range robots {
-			chart[robo.Y][robo.X] = 0
-		}
-
 		for i := range robots {
 			newpos := (robots[i].X + robots[i].VX)
 			if robots[i].VX > 0 {
@@ -162,18 +158,17 @@ func solve_2(path string, lx int, ly int) int {
 					robots[i].Y = newpos % ly
 				}
 			}
+			chart[robots[i].Y][robots[i].X] += 1
 		}
-		for _, robo := range robots {
-			chart[robo.Y][robo.X] += 1
-		}
-		outline := ""
-		for _, line := range chart {
-			for _, field := range line {
+		outline = ""
+		for y, line := range chart {
+			for x, field := range line {
 				if field == 0 {
-					outline += fmt.Sprint(".")
+					outline += "."
 				} else {
-					outline += fmt.Sprint("#")
+					outline += "#"
 				}
+				chart[y][x] = 0
 			}
 		}
 		if strings.Contains(outline, "#....#####################....#") {
@@ -181,17 +176,5 @@ func solve_2(path string, lx int, ly int) int {
 			break
 		}
 	}
-
-	for _, line := range chart {
-		for _, field := range line {
-			if field == 0 {
-				fmt.Print(".")
-			} else {
-				fmt.Print(field)
-			}
-		}
-		fmt.Println()
-	}
-
 	return i
 }
