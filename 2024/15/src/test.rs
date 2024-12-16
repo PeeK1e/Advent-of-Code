@@ -44,7 +44,7 @@ v^^>>><<^^<>>^v^<v^vv<>v^<<>^<^v^v><^<<<><<^<v><v<>vv>>v><v^<vv<>v^<<^";
     fn sample_small_t2() {
         let res = crate::solve_2::solve2(&INPUT_SMALL).unwrap();
 
-        assert_eq!(9021, res);
+        assert_eq!(618, res);
     }
 
     #[test]
