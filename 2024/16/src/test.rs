@@ -39,14 +39,14 @@ mod test {
 
     #[test]
     fn sample_t1() {
-        let res = solve_t1(&INPUT).unwrap() + 1000;
+        let res = solve_t1(&INPUT).unwrap();
 
         assert_eq!(7036, res);
     }
 
     #[test]
     fn sample2_t1() {
-        let res = solve_t1(&INPUT_TWO).unwrap() + 1000;
+        let res = solve_t1(&INPUT_TWO).unwrap();
 
         assert_eq!(11048, res);
     }

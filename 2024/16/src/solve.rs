@@ -133,7 +133,7 @@ impl Chart {
                             distance,
                             y,
                             x,
-                            direction: RefCell::new(Direction::NEUTRAL)
+                            direction: RefCell::new(Direction::RIGHT)
                         }
                     })
                     .collect()
