@@ -1,16 +1,29 @@
-use std::{cell::RefCell, fmt, i32};
+use std::{any::TypeId, cell::RefCell, collections::{HashMap, HashSet}, fmt, future::pending, hash::{Hash, Hasher}, i32, thread::panicking};
 
 
 #[allow(unused_variables,unused_mut)]
 pub fn solve_t1(input: &str) -> Result<i64, String> {
     let mut chart = Chart::new(input);
-    println!("{chart}");
-
     let unvisited: Vec<&Tile> = chart.tiles.iter().map(|row| row.iter().map(|col| col).collect::<Vec<&Tile>>()).flatten().collect();
     chart.update_distances(unvisited);
 
-    let path = chart.find_path();
-    chart.print(&path); 
+    let mut end = &chart.tiles[0][0];
+    chart.tiles.iter().for_each(|row| {
+        row.iter().for_each(|t| {if t.tile_type == TileType::End { end = t; return;}});
+    });
+
+    let mut start = &chart.tiles[0][0];
+    chart.tiles.iter().for_each(|row| {
+        row.iter().for_each(|t| {
+            if t.tile_type == TileType::Start {
+                start = t;
+            return;
+            }
+        });
+    });
+    
+    let path = chart.find_path(end, start);
+    //chart.print(&path); 
 
     let count = *path.first().unwrap().distance.borrow() as i64; 
     Ok(count) 
@@ -18,9 +31,49 @@ pub fn solve_t1(input: &str) -> Result<i64, String> {
 
 #[allow(unused_variables,unused_mut)]
 pub fn solve_t2(input: &str) -> Result<i64, String> {
-    let mut count = 0;
+    let mut chart = Chart::new(input);
+    let unvisited: Vec<&Tile> = chart.tiles.iter().map(|row| row.iter().map(|col| col).collect::<Vec<&Tile>>()).flatten().collect();
+    chart.update_distances(unvisited);
 
-    Ok(count) 
+    // end tile
+    let mut end = &chart.tiles[0][0];
+    chart.tiles.iter().for_each(|row| {
+        row.iter().for_each(|t| {if t.tile_type == TileType::End { end = t; return;}});
+    });
+
+    // start tile
+    let mut start = &chart.tiles[0][0];
+    chart.tiles.iter().for_each(|row| {
+        row.iter().for_each(|t| {if t.tile_type == TileType::Start {start = t;return;}});
+    });
+    
+    // this is our best path, we need to search all tiles that are a good path
+    // this means, every tile which ich next to the main path needs its weight checked to see if multiple best paths exist
+    let mut path = chart.find_path(end, start);
+    path.remove(0);
+    //chart.print(&path);
+
+    let mut hset = HashSet::new();
+    path.iter().for_each(|ele| {hset.insert(*ele);});
+
+    loop {
+        let mut newhset = hset.clone();
+        for tile in hset.iter() {
+            for newtile in chart.find_good_path_points(tile) {
+                for foundtile in chart.find_path(newtile, start) {
+                    newhset.insert(foundtile);
+                }
+            }
+        }
+        if hset.len() == newhset.len() {
+            break;
+        }
+        hset = newhset;
+    }
+
+    let count = hset.len() + 1;
+
+    Ok(count as i64) 
 }
 
 struct Chart {
@@ -29,7 +82,7 @@ struct Chart {
     w: i32
 }
 
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Hash)]
 enum TileType {
     Wall,
     Start,
@@ -46,7 +99,7 @@ struct Tile {
     y: usize,
 }
 
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy, Hash)]
 enum Direction {
     UP,
     DOWN,
@@ -135,19 +188,16 @@ impl Chart {
         } 
     }
 
-    fn find_path(&self) -> Vec<&Tile> {
+    fn find_path(&self, end: &Tile, start: &Tile) -> Vec<&Tile> {
         // find end tile
-        let mut tile= &self.tiles[0][0];
-        self.tiles.iter().for_each(|row| {
-            row.iter().for_each(|t| {if t.tile_type == TileType::End { tile = t; return;}});
-        });
+        let mut tile= &self.tiles[end.y][end.x];
 
         let mut path = vec![];
         path.push(tile);
 
         let (mut sx, mut sy) = (0,0);
         let mut dist = i32::MAX;
-        while tile.tile_type != TileType::Start {
+        while tile != start {
             // reverse path search
             let (x,y) = (tile.x, tile.y);
             for (dx,dy) in [(1,0),(-1,0),(0,1),(0,-1)].iter() {
@@ -180,7 +230,7 @@ impl Chart {
         for tile in path {
             let (x,y) = (tile.x, tile.y);
             if tile.tile_type != TileType::Start && tile.tile_type != TileType::End {
-                map[y][x] = "%";
+                map[y][x] = "O";
             }
         }
         map
@@ -217,6 +267,40 @@ impl Chart {
                     .collect::<Vec<&str>>()
             })
             .collect::<Vec<Vec<&str>>>()
+    }
+
+    fn find_good_path_points(&self, tile: &Tile) -> Vec<&Tile> {
+        let mut tiles = vec![];
+        for (dx,dy) in [(1,0),(-1,0),(0,1),(0,-1)].iter() {
+            let (x,y) = (tile.x as i32 + dx, tile.y as i32 + dy);
+            if self.inbounds(x,y) {
+                let new_tile = &self.tiles[y as usize][x as usize];
+                if new_tile.tile_type == TileType::Wall 
+                    || new_tile.tile_type == TileType::Start 
+                    || new_tile.tile_type == TileType::End {
+                    continue;
+                }
+
+                // this indicates that we have a path of the same lenght, just some more or less turns
+                if (*tile.distance.borrow()-1)%1000 == *new_tile.distance.borrow()%1000 {
+                    tiles.push(&self.tiles[y as usize][x as usize]);
+                }
+            }
+        }
+        tiles
+    }
+}
+
+impl Hash for Tile {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        // Hash the fields individually
+        self.tile_type.hash(state);
+        self.x.hash(state);
+        self.y.hash(state);
+        // For `RefCell` fields, you can either skip or hash their inner values.
+        // Be cautious with `borrow` to avoid panics.
+        self.distance.borrow().hash(state);
+        self.direction.borrow().hash(state);
     }
 }
 

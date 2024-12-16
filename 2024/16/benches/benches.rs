@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use criterion::{criterion_group, criterion_main, Criterion};
 use solution::solve::{solve_t1, solve_t2};
 

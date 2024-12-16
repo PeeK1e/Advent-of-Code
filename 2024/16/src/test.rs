@@ -55,7 +55,13 @@ mod test {
     fn sample_t2() {
         let res = solve_t2(&INPUT).unwrap();
 
-        assert_eq!(0, res);
-    } 
+        assert_eq!(45, res);
+    }
+    #[test]
+    fn sample2_t2() {
+        let res = solve_t2(&INPUT_TWO).unwrap();
+
+        assert_eq!(64, res);
+    }  
 
 }
