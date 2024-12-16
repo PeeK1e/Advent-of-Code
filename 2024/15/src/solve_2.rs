@@ -8,15 +8,18 @@ pub fn solve2(input: &str) -> Result<i64, String> {
 
     let mut directions = Direction::move_stack(input);
 
+    let (mut x, mut y) = dungeon.get_robot_pos();
     while directions.len() > 0 {
-        let (x, y) = dungeon.get_robot_pos();
         let dir = directions.get(0).unwrap().clone();
         directions.remove(0);
 
-        if dungeon.is_space_at_end_of_row(dir, x as isize, y as isize) {
-            let tile = dungeon.get_tile_type(x, y);
-            dungeon.move_tiles(dir, tile, x as isize, y as isize); 
-        }
+        if dungeon.is_space_at_end_of_row(dir, x, y) {
+            let tile = dungeon.get_tile_type(x as usize, y as usize);
+            dungeon.move_tiles(dir, tile, x, y); 
+            let (dx, yx) = dir.get_delta();
+            x += dx;
+            y += yx; 
+        } 
     }
 
     count = dungeon.get_box_coord_sum();
@@ -93,11 +96,11 @@ impl Dungeon {
         }
     }
 
-    fn get_robot_pos(&self) -> (usize,usize) {
+    fn get_robot_pos(&self) -> (isize,isize) {
         for (y, cols) in self.tiles.iter().enumerate() {
             for (x, row) in cols.iter().enumerate() {
                 if *row == Tile::Robot {
-                    return (x as usize, y as usize);
+                    return (x as isize, y as isize);
                 }
             }
         }
@@ -233,7 +236,7 @@ impl Direction {
         .collect::<Vec<Direction>>()
     }
 
-    // returns the delta corresponding to the direction (x,y)
+    /// returns the delta corresponding to the direction (x,y)
     fn get_delta(&self) -> (isize, isize) {
         match self {
             Direction::UP => (0,-1),

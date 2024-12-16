@@ -8,22 +8,25 @@ pub fn solve1(input: &str) -> Result<i64, String> {
 
     let mut directions = Direction::move_stack(input);
 
-    println!();
-    println!("{dungeon}");
+    // println!();
+    // println!("{dungeon}");
 
+    let (mut x, mut y) = dungeon.get_robot_pos();
     while directions.len() > 0 {
-        let (x, y) = dungeon.get_robot_pos();
         let dir = directions.get(0).unwrap().clone();
         directions.remove(0);
 
         if dungeon.is_space_at_end_of_row(dir, x, y) {
             let tile = dungeon.get_tile_type(x as usize, y as usize);
             dungeon.move_tiles(dir, tile, x, y); 
+            let (dx, yx) = dir.get_delta();
+            x += dx;
+            y += yx;
         }
     }
 
-    println!();
-    println!("{dungeon}");
+    // println!();
+    // println!("{dungeon}");
 
     count = dungeon.get_box_coord_sum();
     
