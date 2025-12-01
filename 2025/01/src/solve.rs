@@ -30,25 +30,27 @@ pub fn solve_t2(input: &str) -> Result<i64, String> {
     let mut dial: i64 = 50; 
     for ele in input.split("\n") {
         let n = decode_line(ele);
-        let mut add= 0;
 
-        dial += n;
-
-        if dial > limit {
-            while dial > limit {
-                count+=1;
-                dial -= limit;
-            }
-        } else if dial < 0 {
-            while dial < 0{
-                dial += limit;
-                count+=1;
-            }
+        // get overflow
+        let mut add = ((n+dial)/limit).abs();
+        
+        // check if we moved back over zero
+        if dial != 0 && dial+n < 0 && dial+n != 0{
+            add += 1;
         }
-
-        if dial == 0 {
+        
+        // shift the dial around
+        dial += n;
+        dial %= limit;
+        if dial < 0 {
+            dial += limit;
+        }
+        
+        // only count += if the add value is also zero, since we have the overflow in add when we get exactly zero by overflowing
+        if dial == 0 && add == 0 {
             count+=1;
         }
+        count+=add;
     }
 
     Ok(count) 

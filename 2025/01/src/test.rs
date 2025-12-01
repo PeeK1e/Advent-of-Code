@@ -1,4 +1,6 @@
 mod test {
+    use std::fs::read_to_string;
+
     #[allow(unused_imports)]
     use crate::solve::{solve_t1, solve_t2};
 
@@ -27,4 +29,16 @@ L82";
 
         assert_eq!(6, res);
     }
+
+    #[test]
+    fn known_good() {
+        let inp = read_to_string("./known").unwrap();
+
+        let s1 = solve_t1(&inp).unwrap();
+        let s2 = solve_t2(&inp).unwrap();
+
+        assert_eq!(989,s1);
+        assert_eq!(5941, s2)
+    }
+
 }
