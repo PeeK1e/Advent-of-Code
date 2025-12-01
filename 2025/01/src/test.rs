@@ -1,6 +1,4 @@
 mod test {
-    use std::fs::read_to_string;
-
     #[allow(unused_imports)]
     use crate::solve::{solve_t1, solve_t2};
 
@@ -32,7 +30,7 @@ L82";
 
     #[test]
     fn known_good() {
-        let inp = read_to_string("./known").unwrap();
+        let inp = std::fs::read_to_string("./known").unwrap();
 
         let s1 = solve_t1(&inp).unwrap();
         let s2 = solve_t2(&inp).unwrap();
