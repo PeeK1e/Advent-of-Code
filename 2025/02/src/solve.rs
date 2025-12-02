@@ -39,6 +39,7 @@ pub fn solve_t2(input: &str) -> Result<i64, String> {
                 let (pat, rest) = s.split_at(j);
                 if check_pattern(pat, rest) {
                     invalid.push(i);
+                    break;
                 }
             }
         }
@@ -65,13 +66,14 @@ fn split_input(inp: &str) -> Vec<(i64, i64)> {
 fn check_pattern(pat: &str, to_check: &str) -> bool {
     let splits = split_every(to_check, pat.len());
 
+    let mut ok = true;
     for ele in splits {
         if ele != pat {
-            return false;
+            ok = false;
         }
     }
 
-    return true;
+    return ok;
 }
 
 fn split_every(s: &str, n: usize) -> Vec<&str> {
@@ -80,8 +82,13 @@ fn split_every(s: &str, n: usize) -> Vec<&str> {
 
     let mut s = s;
     while len > 0 {
+        // we cant split further if the remaining string is smaller than `n`  
         if s.len() < n {
             len = 0;
+            // skip if s is empty
+            if s.len() > 0 {
+                splits.push(s);
+            }
             continue;
         }
         let (split , rest) = s.split_at(n);
