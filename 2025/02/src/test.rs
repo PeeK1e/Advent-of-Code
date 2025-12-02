@@ -16,6 +16,6 @@ mod test {
     fn sample_t2() {
         let res = solve_t2(&INPUT).unwrap();
 
-        assert_eq!(0, res);
+        assert_eq!(4174379265, res);
     }
 }
